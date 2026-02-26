@@ -96,7 +96,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold">T</div>
-            <span style={{fontFamily: "'Syne', sans-serif"}} className="font-bold text-lg">TaskHelper</span>
+            <span style={{fontFamily: "'Syne', sans-serif"}} className="font-bold text-lg">BroHelp</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/login" className="text-sm text-white/50 hover:text-white transition-colors">Sign in</Link>
