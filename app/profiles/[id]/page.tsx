@@ -4,14 +4,22 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { ArrowLeft, Star, MessageSquare, Calendar, CheckCircle, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Star,
+  MessageSquare,
+  Calendar,
+  CheckCircle,
+  Loader2,
+  Edit,
+} from "lucide-react";
 
 type Review = {
   id: string;
   score: number;
   comment?: string;
   createdAt: string;
-  giver: { id: string; name?: string;image?: string };
+  giver: { id: string; name?: string; image?: string };
   task: { id: string; title: string };
 };
 
@@ -23,7 +31,12 @@ type ProfileUser = {
   rating: number;
   ratingCount: number;
   createdAt: string;
-  postedTasks: { id: string; title: string; credits: number; createdAt: string }[];
+  postedTasks: {
+    id: string;
+    title: string;
+    credits: number;
+    createdAt: string;
+  }[];
   ratingsReceived: Review[];
 };
 
@@ -31,7 +44,12 @@ function StarRating({ score }: { score: number }) {
   return (
     <div className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((s) => (
-        <Star key={s} size={12} className={s <= score ? "text-yellow-400" : "text-white/15"} fill={s <= score ? "currentColor" : "none"} />
+        <Star
+          key={s}
+          size={12}
+          className={s <= score ? "text-yellow-400" : "text-white/15"}
+          fill={s <= score ? "currentColor" : "none"}
+        />
       ))}
     </div>
   );
@@ -49,27 +67,40 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const load = async () => {
-      const res = await fetch(`/api/profile/${params.id}`);
-      const data = await res.json();
-      setProfile(data.user);
-      setLoading(false);
+      try {
+        const res = await fetch(`/api/profile/${params.id}`);
+        if (!res.ok) {
+          setProfile(null);
+          setLoading(false);
+          return;
+        }
+        const data = await res.json();
+        setProfile(data.user);
+      } catch {
+        setProfile(null);
+      } finally {
+        setLoading(false);
+      }
     };
-    load();
-  }, [params.id]);
+
+    if (params?.id) load();
+  }, [params?.id]);
 
   const startConversation = async () => {
     if (!profile || !currentUser?.id) return;
     setStartingConvo(true);
+
     try {
       const res = await fetch("/api/conversations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: profile.id }),
       });
+
       const data = await res.json();
       router.push(`/messages/${data.conversation.id}`);
     } catch {
-      console.error("Failed");
+      console.error("Failed to start conversation");
     } finally {
       setStartingConvo(false);
     }
@@ -78,7 +109,10 @@ export default function ProfilePage() {
   const isOwnProfile = currentUser?.id === params.id;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white pt-24 pb-16" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div
+      className="min-h-screen bg-[#0a0a0f] text-white pt-24 pb-16"
+      style={{ fontFamily: "'DM Sans', sans-serif" }}
+    >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
         .card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); }
@@ -92,7 +126,10 @@ export default function ProfilePage() {
       `}</style>
 
       <div className="max-w-3xl mx-auto px-6">
-        <Link href="/tasks" className="inline-flex items-center gap-2 text-white/40 hover:text-white text-sm mb-8 transition-colors">
+        <Link
+          href="/tasks"
+          className="inline-flex items-center gap-2 text-white/40 hover:text-white text-sm mb-8 transition-colors"
+        >
           <ArrowLeft size={14} /> Back
         </Link>
 
@@ -106,65 +143,116 @@ export default function ProfilePage() {
           <div className="text-center py-20 text-white/30">User not found.</div>
         ) : (
           <div className="space-y-5">
-            {/* Profile Header */}
+            {/* Profile Card */}
             <div className="card rounded-3xl p-7">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="h-16 w-16 rounded-full bg-indigo-500/20 border-2 border-indigo-500/30 flex items-center justify-center text-2xl font-bold text-indigo-400">
-                    {profile.image
-                      ? <img src={profile.image} className="rounded-full w-full h-full object-cover" />
-                      : (profile.name?.[0]  ?? "U").toUpperCase()
-                    }
-                  </div>
-                  <div>
-                    <h1 style={{ fontFamily: "'Syne', sans-serif" }} className="text-2xl font-extrabold">
-                      { profile.name ?? "Anonymous"}
-                    </h1>
-                    {profile.name && (
-                      <p className="text-white/40 text-sm">{profile.name}</p>
+                  <div className="h-16 w-16 rounded-full bg-indigo-500/20 border-2 border-indigo-500/30 flex items-center justify-center text-2xl font-bold text-indigo-400 overflow-hidden">
+                    {profile.image ? (
+                      <img
+                        src={profile.image}
+                        className="w-full h-full object-cover"
+                        alt="profile"
+                      />
+                    ) : (
+                      (profile.name?.[0] ?? "U").toUpperCase()
                     )}
+                  </div>
+
+                  <div>
+                    <h1
+                      style={{ fontFamily: "'Syne', sans-serif" }}
+                      className="text-2xl font-extrabold"
+                    >
+                      {profile.name ?? "Anonymous"}
+                    </h1>
+
                     <div className="flex items-center gap-3 mt-1.5">
                       {profile.rating > 0 ? (
                         <div className="flex items-center gap-1.5">
                           <StarRating score={Math.round(profile.rating)} />
-                          <span className="text-sm font-medium text-yellow-400">{profile.rating.toFixed(1)}</span>
-                          <span className="text-xs text-white/30">({profile.ratingCount} reviews)</span>
+                          <span className="text-sm font-medium text-yellow-400">
+                            {profile.rating.toFixed(1)}
+                          </span>
+                          <span className="text-xs text-white/30">
+                            ({profile.ratingCount} reviews)
+                          </span>
                         </div>
                       ) : (
-                        <span className="text-xs text-white/25">No reviews yet</span>
+                        <span className="text-xs text-white/25">
+                          No reviews yet
+                        </span>
                       )}
                     </div>
                   </div>
                 </div>
 
-                {!isOwnProfile && currentUser?.id && (
-                  <button
-                    onClick={startConversation}
-                    disabled={startingConvo}
-                    className="btn-primary rounded-xl px-4 py-2.5 text-sm font-semibold flex items-center gap-2 shrink-0"
-                  >
-                    {startingConvo
-                      ? <Loader2 size={14} className="animate-spin relative z-10" />
-                      : <><MessageSquare size={14} className="relative z-10" /><span>Message</span></>
-                    }
-                  </button>
-                )}
+                {/* Right Buttons */}
+                <div className="flex gap-3">
+                  {isOwnProfile && (
+                    <Link
+                      href="/profiles/edit"
+                      className="btn-primary rounded-xl px-4 py-2.5 text-sm font-semibold flex items-center gap-2"
+                    >
+                      <Edit size={14} />
+                      <span>Edit</span>
+                    </Link>
+                  )}
+
+                  {!isOwnProfile && currentUser?.id && (
+                    <button
+                      onClick={startConversation}
+                      disabled={startingConvo}
+                      className="btn-primary rounded-xl px-4 py-2.5 text-sm font-semibold flex items-center gap-2"
+                    >
+                      {startingConvo ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : (
+                        <>
+                          <MessageSquare size={14} />
+                          <span>Message</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
 
+              {/* Bio */}
               {profile.bio && (
-                <p className="text-white/50 text-sm leading-relaxed mt-5 pt-5 border-t border-white/6">{profile.bio}</p>
+                <p className="text-white/50 text-sm leading-relaxed mt-5 pt-5 border-t border-white/6">
+                  {profile.bio}
+                </p>
               )}
 
+              {/* Meta */}
               <div className="flex items-center gap-4 mt-4 pt-4 border-t border-white/6 text-xs text-white/30">
-                <span className="flex items-center gap-1.5"><Calendar size={11} /> Joined {new Date(profile.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}</span>
-                <span className="flex items-center gap-1.5"><CheckCircle size={11} /> {profile.postedTasks.length} tasks completed</span>
+                <span className="flex items-center gap-1.5">
+                  <Calendar size={11} />
+                  Joined{" "}
+                  {new Date(profile.createdAt).toLocaleDateString("en-US", {
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </span>
+
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle size={11} />
+                  {profile.postedTasks.length} tasks completed
+                </span>
               </div>
             </div>
 
-            {/* Reviews */}
+            {/* Reviews Section */}
             <div>
-              <h2 style={{ fontFamily: "'Syne', sans-serif" }} className="text-xl font-bold mb-4">
-                Reviews <span className="text-white/30 font-normal text-base">({profile.ratingsReceived.length})</span>
+              <h2
+                style={{ fontFamily: "'Syne', sans-serif" }}
+                className="text-xl font-bold mb-4"
+              >
+                Reviews{" "}
+                <span className="text-white/30 font-normal text-base">
+                  ({profile.ratingsReceived.length})
+                </span>
               </h2>
 
               {profile.ratingsReceived.length === 0 ? (
@@ -181,18 +269,28 @@ export default function ProfilePage() {
                             {review.giver.name?.[0]?.toUpperCase() ?? "U"}
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-white">{ review.giver.name ?? "Anonymous"}</p>
-                            <p className="text-xs text-white/30">{new Date(review.createdAt).toLocaleDateString()}</p>
+                            <p className="text-sm font-medium text-white">
+                              {review.giver.name ?? "Anonymous"}
+                            </p>
+                            <p className="text-xs text-white/30">
+                              {new Date(review.createdAt).toLocaleDateString()}
+                            </p>
                           </div>
                         </div>
+
                         <StarRating score={review.score} />
                       </div>
 
                       {review.comment && (
-                        <p className="text-sm text-white/50 leading-relaxed">{review.comment}</p>
+                        <p className="text-sm text-white/50 leading-relaxed">
+                          {review.comment}
+                        </p>
                       )}
 
-                      <Link href={`/tasks/${review.task.id}`} onClick={(e) => e.stopPropagation()} className="inline-flex items-center gap-1 text-xs text-indigo-400/60 hover:text-indigo-400 mt-2 transition-colors">
+                      <Link
+                        href={`/tasks/${review.task.id}`}
+                        className="inline-flex items-center gap-1 text-xs text-indigo-400/60 hover:text-indigo-400 mt-2 transition-colors"
+                      >
                         <CheckCircle size={10} /> {review.task.title}
                       </Link>
                     </div>

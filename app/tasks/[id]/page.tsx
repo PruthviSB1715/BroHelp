@@ -4,7 +4,18 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { ArrowLeft, Clock, MapPin, Wifi, Star, Tag, CheckCircle, Loader2, AlertCircle, MessageSquare } from "lucide-react";
+import {
+  ArrowLeft,
+  Clock,
+  MapPin,
+  Wifi,
+  Star,
+  Tag,
+  CheckCircle,
+  Loader2,
+  AlertCircle,
+  MessageSquare,
+} from "lucide-react";
 
 type Task = {
   id: string;
@@ -21,7 +32,13 @@ type Task = {
   expiresAt?: string;
   posterId: string;
   acceptorId?: string;
-  poster: { id: string; name?: string; image?: string; rating: number; ratingCount: number };
+  poster: {
+    id: string;
+    name?: string;
+    image?: string;
+    rating: number;
+    ratingCount: number;
+  };
   acceptor?: { id: string; name?: string };
 };
 
@@ -33,8 +50,20 @@ const statusStyle: Record<string, string> = {
   DISPUTED: "bg-purple-500/15 text-purple-400 border border-purple-500/20",
 };
 
-function UserCard({ user, label, showMessage, onMessage, messageLoading }: {
-  user: { id: string; name?: string; image?: string; rating?: number; ratingCount?: number };
+function UserCard({
+  user,
+  label,
+  showMessage,
+  onMessage,
+  messageLoading,
+}: {
+  user: {
+    id: string;
+    name?: string;
+    image?: string;
+    rating?: number;
+    ratingCount?: number;
+  };
   label: string;
   showMessage?: boolean;
   onMessage?: () => void;
@@ -46,13 +75,20 @@ function UserCard({ user, label, showMessage, onMessage, messageLoading }: {
   return (
     <div className="card rounded-2xl p-5 flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <Link href={`/profile/${user.id}`}>
+        <Link href={`/profiles/${user.id}`}>
           <div className="h-10 w-10 rounded-full bg-indigo-500/20 border border-indigo-500/30 hover:border-indigo-400/60 transition-colors flex items-center justify-center font-bold text-indigo-400 overflow-hidden">
-            {user.image ? <img src={user.image} className="w-full h-full object-cover" /> : letter}
+            {user.image ? (
+              <img src={user.image} className="w-full h-full object-cover" />
+            ) : (
+              letter
+            )}
           </div>
         </Link>
         <div>
-          <Link href={`/profile/${user.id}`} className="text-sm font-medium text-white hover:text-indigo-400 transition-colors block">
+          <Link
+            href={`/profiles/${user.id}`}
+            className="text-sm font-medium text-white hover:text-indigo-400 transition-colors block"
+          >
             {displayName}
           </Link>
           <p className="text-xs text-white/30">{label}</p>
@@ -63,8 +99,14 @@ function UserCard({ user, label, showMessage, onMessage, messageLoading }: {
         {user.rating !== undefined && user.rating > 0 && (
           <div className="flex items-center gap-1.5 text-yellow-500">
             <Star size={13} fill="currentColor" />
-            <span className="text-sm font-medium">{user.rating.toFixed(1)}</span>
-            {user.ratingCount !== undefined && <span className="text-xs text-white/30">({user.ratingCount})</span>}
+            <span className="text-sm font-medium">
+              {user.rating.toFixed(1)}
+            </span>
+            {user.ratingCount !== undefined && (
+              <span className="text-xs text-white/30">
+                ({user.ratingCount})
+              </span>
+            )}
           </div>
         )}
         {showMessage && onMessage && (
@@ -73,7 +115,13 @@ function UserCard({ user, label, showMessage, onMessage, messageLoading }: {
             disabled={messageLoading}
             className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium border border-indigo-500/25 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 hover:border-indigo-500/40 transition-all"
           >
-            {messageLoading ? <Loader2 size={12} className="animate-spin" /> : <><MessageSquare size={12} /> Message</>}
+            {messageLoading ? (
+              <Loader2 size={12} className="animate-spin" />
+            ) : (
+              <>
+                <MessageSquare size={12} /> Message
+              </>
+            )}
           </button>
         )}
       </div>
@@ -110,27 +158,45 @@ export default function TaskDetailPage() {
   const canComplete = task?.status === "IN_PROGRESS" && isMyTask;
 
   const handleAccept = async () => {
-    setError(""); setActionLoading(true);
+    setError("");
+    setActionLoading(true);
     try {
-      const res = await fetch(`/api/tasks/${task?.id}/accept`, { method: "POST" });
+      const res = await fetch(`/api/tasks/${task?.id}/accept`, {
+        method: "POST",
+      });
       const data = await res.json();
-      if (!res.ok) { setError(data.error); return; }
+      if (!res.ok) {
+        setError(data.error);
+        return;
+      }
       setTask({ ...task!, status: "IN_PROGRESS", acceptorId: user.id });
       setSuccess("Task accepted! Get to work 🎉");
-    } catch { setError("Something went wrong."); }
-    finally { setActionLoading(false); }
+    } catch {
+      setError("Something went wrong.");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleComplete = async () => {
-    setError(""); setActionLoading(true);
+    setError("");
+    setActionLoading(true);
     try {
-      const res = await fetch(`/api/tasks/${task?.id}/complete`, { method: "POST" });
+      const res = await fetch(`/api/tasks/${task?.id}/complete`, {
+        method: "POST",
+      });
       const data = await res.json();
-      if (!res.ok) { setError(data.error); return; }
+      if (!res.ok) {
+        setError(data.error);
+        return;
+      }
       setTask({ ...task!, status: "COMPLETED" });
       setSuccess("Task completed! Credits transferred ✅");
-    } catch { setError("Something went wrong."); }
-    finally { setActionLoading(false); }
+    } catch {
+      setError("Something went wrong.");
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const startConversation = async (userId: string) => {
@@ -144,12 +210,18 @@ export default function TaskDetailPage() {
       });
       const data = await res.json();
       router.push(`/messages/${data.conversation.id}`);
-    } catch { setError("Failed to open conversation."); }
-    finally { setMessageLoading(null); }
+    } catch {
+      setError("Failed to open conversation.");
+    } finally {
+      setMessageLoading(null);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white pt-24 pb-16" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div
+      className="min-h-screen bg-[#0a0a0f] text-white pt-24 pb-16"
+      style={{ fontFamily: "'DM Sans', sans-serif" }}
+    >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
         .card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); }
@@ -167,7 +239,10 @@ export default function TaskDetailPage() {
       `}</style>
 
       <div className="max-w-3xl mx-auto px-6">
-        <Link href="/tasks" className="inline-flex items-center gap-2 text-white/40 hover:text-white text-sm mb-8 transition-colors">
+        <Link
+          href="/tasks"
+          className="inline-flex items-center gap-2 text-white/40 hover:text-white text-sm mb-8 transition-colors"
+        >
           <ArrowLeft size={14} /> Back to marketplace
         </Link>
 
@@ -185,32 +260,66 @@ export default function TaskDetailPage() {
               <div className="flex items-start justify-between gap-4 mb-5">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-3">
-                    {task.category && <span className="text-xs bg-white/5 border border-white/8 rounded-full px-2.5 py-0.5 text-white/40">{task.category}</span>}
-                    <span className={`text-xs font-medium rounded-full px-3 py-1 ${statusStyle[task.status]}`}>{task.status.replace("_", " ")}</span>
+                    {task.category && (
+                      <span className="text-xs bg-white/5 border border-white/8 rounded-full px-2.5 py-0.5 text-white/40">
+                        {task.category}
+                      </span>
+                    )}
+                    <span
+                      className={`text-xs font-medium rounded-full px-3 py-1 ${statusStyle[task.status]}`}
+                    >
+                      {task.status.replace("_", " ")}
+                    </span>
                   </div>
-                  <h1 style={{ fontFamily: "'Syne', sans-serif" }} className="text-3xl font-extrabold mb-2">{task.title}</h1>
+                  <h1
+                    style={{ fontFamily: "'Syne', sans-serif" }}
+                    className="text-3xl font-extrabold mb-2"
+                  >
+                    {task.title}
+                  </h1>
                 </div>
                 <div className="text-right shrink-0">
-                  <p style={{ fontFamily: "'Syne', sans-serif" }} className="text-4xl font-extrabold">{task.credits}</p>
+                  <p
+                    style={{ fontFamily: "'Syne', sans-serif" }}
+                    className="text-4xl font-extrabold"
+                  >
+                    {task.credits}
+                  </p>
                   <p className="text-xs text-white/30">credits</p>
                 </div>
               </div>
 
-              <p className="text-white/60 leading-relaxed mb-6">{task.description}</p>
+              <p className="text-white/60 leading-relaxed mb-6">
+                {task.description}
+              </p>
 
               <div className="flex flex-wrap gap-4 text-sm text-white/40">
-                <span className="flex items-center gap-1.5"><Clock size={13} /> {task.estimatedTime} mins</span>
-                {task.isRemote
-                  ? <span className="flex items-center gap-1.5 text-emerald-500/70"><Wifi size={13} /> Remote</span>
-                  : <span className="flex items-center gap-1.5 text-orange-500/70"><MapPin size={13} /> {task.location || "Local"}</span>
-                }
-                {task.expiresAt && <span>Expires {new Date(task.expiresAt).toLocaleDateString()}</span>}
+                <span className="flex items-center gap-1.5">
+                  <Clock size={13} /> {task.estimatedTime} mins
+                </span>
+                {task.isRemote ? (
+                  <span className="flex items-center gap-1.5 text-emerald-500/70">
+                    <Wifi size={13} /> Remote
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5 text-orange-500/70">
+                    <MapPin size={13} /> {task.location || "Local"}
+                  </span>
+                )}
+                {task.expiresAt && (
+                  <span>
+                    Expires {new Date(task.expiresAt).toLocaleDateString()}
+                  </span>
+                )}
               </div>
 
               {task.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-5">
                   {task.tags.map((tag) => (
-                    <span key={tag} className="flex items-center gap-1 text-xs bg-indigo-500/10 border border-indigo-500/15 text-indigo-400/70 rounded-full px-3 py-1">
+                    <span
+                      key={tag}
+                      className="flex items-center gap-1 text-xs bg-indigo-500/10 border border-indigo-500/15 text-indigo-400/70 rounded-full px-3 py-1"
+                    >
                       <Tag size={9} /> {tag}
                     </span>
                   ))}
@@ -250,19 +359,50 @@ export default function TaskDetailPage() {
             )}
 
             {canAccept && (
-              <button onClick={handleAccept} disabled={actionLoading} className="btn-primary w-full rounded-xl py-3.5 text-sm font-semibold flex items-center justify-center gap-2">
-                {actionLoading ? <Loader2 size={15} className="animate-spin relative z-10" /> : <><span>Accept this task</span><CheckCircle size={15} className="relative z-10" /></>}
+              <button
+                onClick={handleAccept}
+                disabled={actionLoading}
+                className="btn-primary w-full rounded-xl py-3.5 text-sm font-semibold flex items-center justify-center gap-2"
+              >
+                {actionLoading ? (
+                  <Loader2 size={15} className="animate-spin relative z-10" />
+                ) : (
+                  <>
+                    <span>Accept this task</span>
+                    <CheckCircle size={15} className="relative z-10" />
+                  </>
+                )}
               </button>
             )}
 
             {canComplete && (
-              <button onClick={handleComplete} disabled={actionLoading} className="btn-success w-full rounded-xl py-3.5 text-sm font-semibold text-white flex items-center justify-center gap-2">
-                {actionLoading ? <Loader2 size={15} className="animate-spin" /> : <><CheckCircle size={15} /> Mark as complete & transfer credits</>}
+              <button
+                onClick={handleComplete}
+                disabled={actionLoading}
+                className="btn-success w-full rounded-xl py-3.5 text-sm font-semibold text-white flex items-center justify-center gap-2"
+              >
+                {actionLoading ? (
+                  <Loader2 size={15} className="animate-spin" />
+                ) : (
+                  <>
+                    <CheckCircle size={15} /> Mark as complete & transfer
+                    credits
+                  </>
+                )}
               </button>
             )}
 
-            {isMyTask && task.status === "OPEN" && <p className="text-center text-xs text-white/25">This is your task. Waiting for someone to accept it.</p>}
-            {isAcceptor && task.status === "IN_PROGRESS" && <p className="text-center text-xs text-white/25">You accepted this task. Complete it and the poster will mark it done.</p>}
+            {isMyTask && task.status === "OPEN" && (
+              <p className="text-center text-xs text-white/25">
+                This is your task. Waiting for someone to accept it.
+              </p>
+            )}
+            {isAcceptor && task.status === "IN_PROGRESS" && (
+              <p className="text-center text-xs text-white/25">
+                You accepted this task. Complete it and the poster will mark it
+                done.
+              </p>
+            )}
           </div>
         )}
       </div>

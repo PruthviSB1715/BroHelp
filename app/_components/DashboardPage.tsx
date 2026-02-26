@@ -3,7 +3,13 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { PlusCircle, Wallet, ArrowRight, Clock, CheckCircle } from "lucide-react";
+import {
+  PlusCircle,
+  Wallet,
+  ArrowRight,
+  Clock,
+  CheckCircle,
+} from "lucide-react";
 import { format } from "date-fns";
 
 type Task = {
@@ -34,13 +40,19 @@ function TaskCard({ task }: { task: Task }) {
           <h3 className="font-semibold text-white mb-2">{task.title}</h3>
           <div className="flex items-center gap-3 text-sm text-white/40">
             {task.category && (
-              <span className="bg-white/5 border border-white/8 rounded-full px-2.5 py-0.5 text-xs">{task.category}</span>
+              <span className="bg-white/5 border border-white/8 rounded-full px-2.5 py-0.5 text-xs">
+                {task.category}
+              </span>
             )}
             <span>{task.estimatedTime}m estimated</span>
-            <span className="text-indigo-400 font-medium">{task.credits} credits</span>
+            <span className="text-indigo-400 font-medium">
+              {task.credits} credits
+            </span>
           </div>
         </div>
-        <span className={`text-xs font-medium rounded-full px-3 py-1.5 ${statusStyle[task.status] || statusStyle.OPEN}`}>
+        <span
+          className={`text-xs font-medium rounded-full px-3 py-1.5 ${statusStyle[task.status] || statusStyle.OPEN}`}
+        >
           {task.status.replace("_", " ")}
         </span>
       </div>
@@ -64,7 +76,13 @@ export default function DashboardPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"posted" | "accepted">("posted");
+  const [credits, setCredits] = useState(0);
 
+  useEffect(() => {
+    fetch("/api/wallet")
+      .then((res) => res.json())
+      .then((data) => setCredits(data.user.credits));
+  }, []);
   useEffect(() => {
     const fetchTasks = async () => {
       try {
@@ -82,13 +100,20 @@ export default function DashboardPage() {
 
   const postedTasks = tasks.filter((t) => t.posterId === user?.id);
   const acceptedTasks = tasks.filter((t) => t.acceptorId === user?.id);
-  const activeTasks = postedTasks.filter((t) => t.status === "OPEN" || t.status === "IN_PROGRESS");
-  const completedTasks = [...postedTasks, ...acceptedTasks].filter((t) => t.status === "COMPLETED");
+  const activeTasks = postedTasks.filter(
+    (t) => t.status === "OPEN" || t.status === "IN_PROGRESS",
+  );
+  const completedTasks = [...postedTasks, ...acceptedTasks].filter(
+    (t) => t.status === "COMPLETED",
+  );
 
   const displayTasks = tab === "posted" ? postedTasks : acceptedTasks;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div
+      className="min-h-screen bg-[#0a0a0f] text-white"
+      style={{ fontFamily: "'DM Sans', sans-serif" }}
+    >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
         .stat-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); transition: all 0.2s; }
@@ -110,12 +135,20 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
           <div>
-            <h1 style={{ fontFamily: "'Syne', sans-serif" }} className="text-4xl font-extrabold mb-1">
+            <h1
+              style={{ fontFamily: "'Syne', sans-serif" }}
+              className="text-4xl font-extrabold mb-1"
+            >
               Hey, {user?.name ?? user?.name?.split(" ")[0] ?? "there"} 👋
             </h1>
-            <p className="text-white/40">Here's what's happening with your tasks today.</p>
+            <p className="text-white/40">
+              Here's what's happening with your tasks today.
+            </p>
           </div>
-          <Link href="/tasks/new" className="btn-primary rounded-full px-5 py-2.5 text-sm font-semibold flex items-center gap-2">
+          <Link
+            href="/tasks/new"
+            className="btn-primary rounded-full px-5 py-2.5 text-sm font-semibold flex items-center gap-2"
+          >
             <PlusCircle size={15} className="relative z-10" />
             <span>Post a task</span>
           </Link>
@@ -128,8 +161,16 @@ export default function DashboardPage() {
               <Wallet size={14} /> Available Balance
             </div>
             <div className="flex items-end justify-between">
-              <span style={{ fontFamily: "'Syne', sans-serif" }} className="text-4xl font-extrabold">{user?.credits ?? 0}</span>
-              <Link href="/wallet" className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors">
+              <span
+                style={{ fontFamily: "'Syne', sans-serif" }}
+                className="text-4xl font-extrabold"
+              >
+                {credits}
+              </span>
+              <Link
+                href="/wallet"
+                className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
+              >
                 Manage <ArrowRight size={12} />
               </Link>
             </div>
@@ -143,7 +184,12 @@ export default function DashboardPage() {
             {loading ? (
               <div className="h-10 w-16 bg-white/8 rounded animate-pulse" />
             ) : (
-              <span style={{ fontFamily: "'Syne', sans-serif" }} className="text-4xl font-extrabold">{activeTasks.length}</span>
+              <span
+                style={{ fontFamily: "'Syne', sans-serif" }}
+                className="text-4xl font-extrabold"
+              >
+                {activeTasks.length}
+              </span>
             )}
           </div>
 
@@ -154,7 +200,12 @@ export default function DashboardPage() {
             {loading ? (
               <div className="h-10 w-16 bg-white/8 rounded animate-pulse" />
             ) : (
-              <span style={{ fontFamily: "'Syne', sans-serif" }} className="text-4xl font-extrabold text-green-400">{completedTasks.length}</span>
+              <span
+                style={{ fontFamily: "'Syne', sans-serif" }}
+                className="text-4xl font-extrabold text-green-400"
+              >
+                {completedTasks.length}
+              </span>
             )}
           </div>
         </div>
@@ -179,13 +230,17 @@ export default function DashboardPage() {
           ) : displayTasks.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-white/10 py-16 text-center">
               <p className="text-white/30 text-sm mb-4">
-                {tab === "posted" ? "You haven't posted any tasks yet." : "You haven't accepted any tasks yet."}
+                {tab === "posted"
+                  ? "You haven't posted any tasks yet."
+                  : "You haven't accepted any tasks yet."}
               </p>
               <Link
                 href={tab === "posted" ? "/tasks/new" : "/tasks"}
                 className="text-indigo-400 hover:text-indigo-300 text-sm font-medium transition-colors"
               >
-                {tab === "posted" ? "Post your first task →" : "Browse marketplace →"}
+                {tab === "posted"
+                  ? "Post your first task →"
+                  : "Browse marketplace →"}
               </Link>
             </div>
           ) : (
